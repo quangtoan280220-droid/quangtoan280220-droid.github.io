@@ -3,82 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Leo núi Sion</title>
+  <title>Leo núi vượt chướng ngại vật</title>
   <style>
-    :root{
-      --steps: 6;           /* số câu hỏi */
-      --step-height: 65px;  /* khoảng cách mỗi bước leo */
-      --char-size: 48px;
-      --mountain-color: #7a5f3b;
-      --sky: linear-gradient(#b3e5fc, #e1f5fe);
-      --ground: #6db37f;
-      --accent: #ffcc00;
+    :root {
+      --mountain-width: 360px;
+      --mountain-height: 520px;
+      --character-size: 66px;
+      --step-count: 6; /* số chướng ngại/câu hỏi = số bước leo */
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--sky);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(#aee1f9, #eaf7ff);
       color: #222;
-      display: grid;
-      grid-template-columns: 1fr 420px;
-      min-height: 100vh;
-    }
-
-    /* Khu vực game */
-    .scene {
-      position: relative;
-      overflow: hidden;
       display: flex;
-      align-items: flex-end;
+      min-height: 100vh;
+      align-items: center;
       justify-content: center;
-      padding: 24px;
     }
 
-    .ground {
-      position: absolute;
-      bottom: 0;
-      left: 0; right: 0;
-      height: 120px;
-      background: var(--ground);
+    .game {
+      width: min(960px, 95vw);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 20px;
     }
 
-    /* Núi dạng đa giác */
+    .panel {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      padding: 16px;
+    }
+
+    .title {
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    /* Khu vực núi và nhân vật */
+    .mountain-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+
     .mountain {
-    position: absolute;
-  bottom: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  max-width: 9000px;
-  height: 500px;
-  background-image: url('fuji.jpg'); /* Đổi thành đường dẫn ảnh bạn có */
+      position: relative;
+      width: var(--mountain-width);
+      height: var(--mountain-height);
+      border-radius: 12px;
+      overflow: hidden;
+      background-image: url('fuji.jpg'); /* Đổi thành đường dẫn ảnh bạn có */
   background-size: cover;
   background-position: center;
-
     }
 
-    /* Vạch bước (bậc leo) */
-    .step {
+
+    /* Vạch mốc độ cao */
+    .marker {
       position: absolute;
-      left: 1%;
-      transform: translateX(-1%);
-      width: 0.5%;
-      height: 0.5px;
-      background: rgba(255,255,255,.7);
-      border-radius: 0.5px;
+      left: 8px;
+      width: calc(100% - 16px);
+      height: 1px;
+      background: rgba(255,255,255,0.7);
+    }
+    .marker-label {
+      position: absolute;
+      left: 8px;
+      top: -10px;
+      font-size: 12px;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
     }
 
-    /* Nhân vật hoạt hình (hình tròn + mắt) */
+    /* Nhân vật */
     .character {
       position: absolute;
-  bottom: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 64px;
-  height: 64px;
-  background-image: url('samurai.png'); /* Đổi thành đường dẫn ảnh chiến binh */
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: var(--character-size);
+      height: var(--character-size);
+      border-radius: 10%;
+      background-image: url('samurai.png'); /* Đổi thành đường dẫn ảnh chiến binh */
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -86,324 +104,311 @@
 
     }
 
-    @keyframes idle {
-      0%, 100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(-3px); }
+    .character::after {
+      content: "";
+      position: absolute;
+      bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      width: 18px; height: 6px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 50%;
+      filter: blur(2px);
     }
 
-   
-
-    /* UI bên phải */
-    .panel {
-      background: #ffffffcc;
-      backdrop-filter: blur(6px);
-      border-left: 1px solid #ddd;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    /* Khu vực câu hỏi */
+    .question {
+      margin-bottom: 12px;
+      font-weight: 600;
     }
 
-    .title {
-      font-weight: 700;
-      font-size: 20px;
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
     }
 
-    .progress {
+    .option {
+      padding: 10px 12px;
+      border: 1.5px solid #e6eef7;
+      border-radius: 10px;
+      background: #f8fbff;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+      user-select: none;
+    }
+    .option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+      border-color: #cfe0f5;
+    }
+
+    .status {
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 14px;
+      color: #555;
+      min-height: 24px;
     }
-    .dot {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: #ddd;
-      border: 1px solid #bbb;
-    }
-    .dot.active { background: #4caf50; border-color: #2e7d32; }
-    .dot.current { background: var(--accent); border-color: #c9a300; }
-
-    .question {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 14px;
-    }
-
-    .answers {
-      display: grid;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    button.answer {
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      background: #f7f7f7;
-      cursor: pointer;
-      text-align: left;
-      transition: transform .05s ease, background .2s ease, border-color .2s ease;
-    }
-    button.answer:hover { background: #eee; }
-    button.answer:active { transform: scale(.98); }
 
     .controls {
       display: flex;
       gap: 8px;
       margin-top: 8px;
     }
+
     .btn {
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #bbb;
-      background: #fafafa;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 10px;
+      background: #3a7bd5;
+      color: #fff;
       cursor: pointer;
+      font-weight: 600;
+      transition: filter 120ms ease, transform 120ms ease;
+    }
+    .btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .btn.secondary { background: #6c757d; }
+
+    .progress {
+      margin-top: 10px;
+      height: 8px;
+      background: #eef4fb;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff);
+      transition: width 300ms ease;
     }
 
     .toast {
-      font-size: 14px;
-      color: #444;
-      min-height: 20px;
-    }
-
-    .win {
-      position: absolute;
-      top: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ffffffee;
-      border: 2px solid #4caf50;
-      color: #2e7d32;
-      padding: 12px 16px;
+      margin-top: 8px;
+      padding: 10px 12px;
       border-radius: 10px;
+      background: #f1f9f1;
+      color: #2f6b2f;
+      border: 1px solid #d7efd7;
       display: none;
-      font-weight: 700;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,.2));
     }
-    .win.show { display: block; }
+    .toast.error {
+      background: #fff5f5;
+      color: #8a2f2f;
+      border-color: #ffd7d7;
+    }
 
-    /* Responsive */
-    @media (max-width: 900px) {
-      body { grid-template-columns: 1fr; }
-      .panel { border-left: none; border-top: 1px solid #ddd; }
-      .mountain { width: 80%; }
+    @media (max-width: 820px) {
+      .game { grid-template-columns: 1fr; }
+      .mountain { margin: 0 auto; }
     }
   </style>
 </head>
 <body>
+  <div class="game">
+    <!-- Bên trái: Núi và nhân vật -->
+    <div class="panel">
+      <div class="title">Leo núi vượt chướng ngại vật</div>
+      <div class="subtitle">Trả lời đúng để leo tiếp—sai là tuột về chân núi.</div>
 
-  <div class="scene">
-    <div class="ground"></div>
-    <div class="mountain" id="mountain"></div>
+      <div class="mountain-wrap">
+        <div id="mountain" class="mountain">
+          <div class="peak"></div>
+          <div class="slope"></div>
+          <div class="base"></div>
 
-    <!-- Bậc leo sẽ được JS tạo -->
-    <!-- Nhân vật -->
-    <div class="character" id="character" aria-label="Nhân vật">
-      <div class="face">
-        <div class="eye left"></div>
-        <div class="eye right"></div>
-        <div class="smile"></div>
+          <!-- Vạch mốc theo số bước -->
+          <!-- Tự động thêm bằng JS -->
+
+          <!-- Nhân vật -->
+          <div id="character" class="character" style="top: 95%;"></div>
+        </div>
       </div>
+
+      <div class="status">
+        <span id="statusText">Bắt đầu từ chân núi.</span>
+      </div>
+      <div class="progress">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <div class="controls">
+        <button id="resetBtn" class="btn secondary">Chơi lại</button>
+        <button id="shuffleBtn" class="btn secondary">Đổi bộ câu hỏi</button>
+      </div>
+      <div id="toast" class="toast">Bạn đã trả lời đúng!</div>
+      <div id="toastError" class="toast error">Sai rồi! Tuột về chân núi…</div>
     </div>
 
-    <div class="win" id="winBanner">Bạn đã lên đỉnh núi! 🎉</div>
+    <!-- Bên phải: Câu hỏi -->
+    <div class="panel">
+      <div class="title">Chướng ngại vật hiện tại</div>
+      <div id="questionText" class="question">Nhấn “Đổi bộ câu hỏi” hoặc chọn đáp án để bắt đầu.</div>
+      <div id="options" class="options"></div>
+    </div>
   </div>
 
-  <aside class="panel">
-    <div class="title">Leo núi vượt thử thách</div>
-
-    <div class="progress" id="progressDots"></div>
-
-    <div class="question">
-      <div id="questionText">Câu hỏi sẽ hiển thị ở đây.</div>
-      <div class="answers" id="answers"></div>
-      <div class="controls">
-        <button class="btn" id="resetBtn">Làm lại từ đầu</button>
-        
-      </div>
-      <div class="toast" id="toast"></div>
-    </div>
-
-    <div style="font-size:13px;color:#555;">
-      
-    </div>
-  </aside>
-
   <script>
-    // ====== CẤU HÌNH CÂU HỎI (SỬA TẠI ĐÂY) ======
-    // Mỗi phần tử: { text: '...', options: ['A','B','C'], correctIndex: 1 }
-    const questions = [
-      {
-        text: '1) Thủ đô của Việt Nam là gì?',
-        options: ['TP.HCM', 'Hà Nội', 'Đà Nẵng'],
-        correctIndex: 1
-      },
-      {
-        text: '2) 2 + 3 bằng bao nhiêu?',
-        options: ['4', '5', '6'],
-        correctIndex: 1
-      },
-      {
-        text: '3) Biển lớn nhất thế giới?',
-        options: ['Đại Tây Dương', 'Ấn Độ Dương', 'Thái Bình Dương'],
-        correctIndex: 2
-      },
-      {
-        text: '4) Ngôn ngữ dùng để tạo cấu trúc trang web?',
-        options: ['CSS', 'HTML', 'Python'],
-        correctIndex: 1
-      },
-      {
-        text: '5) Tốc độ ánh sáng xấp xỉ?',
-        options: ['300.000 km/s', '30.000 km/s', '3.000 km/s'],
-        correctIndex: 0
-      },
-      {
-        text: '6) Số nguyên tố nhỏ nhất?',
-        options: ['1', '2', '3'],
-        correctIndex: 1
-      }
+    // Bộ câu hỏi mẫu (có thể thêm/bớt)
+    const questionSets = [
+      [
+        { q: "Thủ đô của Việt Nam là gì?", options: ["A. Hà Nội","B. TP. Hồ Chí Minh","C. Đà Nẵng","D. Huế"], answer: "A" },
+        { q: "2 + 2 bằng mấy?", options: ["A. 3","B. 4","C. 5","D. 6"], answer: "B" },
+        { q: "Ai là tác giả Truyện Kiều?", options: ["A. Nguyễn Du","B. Nguyễn Trãi","C. Hồ Xuân Hương","D. Tố Hữu"], answer: "A" },
+        { q: "Python là gì?", options: ["A. Một loài rắn","B. Ngôn ngữ lập trình","C. Cả A và B","D. Không phải"], answer: "C" },
+        { q: "Biển lớn nhất thế giới?", options: ["A. Đại Tây Dương","B. Ấn Độ Dương","C. Thái Bình Dương","D. Bắc Băng Dương"], answer: "C" },
+        { q: "Số nguyên tố là gì?", options: ["A. Chỉ chia hết cho 1 và chính nó","B. Chia hết cho nhiều số","C. Số chẵn","D. Số lẻ"], answer: "A" },
+      ],
+      [
+        { q: "HTML dùng để làm gì?", options: ["A. Tạo cấu trúc trang web","B. Vẽ đồ họa 3D","C. Lưu trữ dữ liệu lớn","D. Dịch ngôn ngữ"], answer: "A" },
+        { q: "CSS chủ yếu dùng để?", options: ["A. Tạo API","B. Định kiểu giao diện","C. Tính toán số học","D. Lưu file"], answer: "B" },
+        { q: "JavaScript chạy ở đâu?", options: ["A. Trình duyệt","B. Máy chủ","C. Cả A và B","D. Không nơi nào"], answer: "C" },
+        { q: "Thẻ để chèn ảnh trong HTML?", options: ["A. <img>","B. <image>","C. <picture>","D. <photo>"], answer: "A" },
+        { q: "Flexbox thuộc về?", options: ["A. HTML","B. CSS","C. JS","D. SQL"], answer: "B" },
+        { q: "console.log thuộc?", options: ["A. CSS","B. HTML","C. JS","D. SQL"], answer: "C" },
+      ]
     ];
 
-    // ====== BIẾN TRẠNG THÁI ======
-    let current = 0; // chỉ số câu hỏi hiện tại
-    const total = questions.length;
-
-    // ====== THAM CHIẾU DOM ======
-    const mountainEl = document.getElementById('mountain');
-    const characterEl = document.getElementById('character');
-    const winBanner = document.getElementById('winBanner');
+    let questions = [];
+    let level = 0; // vị trí hiện tại (0 = chân núi)
+    const mountain = document.getElementById('mountain');
+    const character = document.getElementById('character');
+    const statusText = document.getElementById('statusText');
+    const progressBar = document.getElementById('progressBar');
     const questionText = document.getElementById('questionText');
-    const answersEl = document.getElementById('answers');
-    const toastEl = document.getElementById('toast');
-    const progressDots = document.getElementById('progressDots');
+    const optionsEl = document.getElementById('options');
+    const toast = document.getElementById('toast');
+    const toastError = document.getElementById('toastError');
     const resetBtn = document.getElementById('resetBtn');
     const shuffleBtn = document.getElementById('shuffleBtn');
 
-    // ====== TẠO BẬC LEO & DOT PROGRESS ======
-    function buildSteps() {
+    // Tạo vạch mốc theo số câu hỏi
+    function renderMarkers(count) {
       // Xóa cũ
-      document.querySelectorAll('.step').forEach(s => s.remove());
-      progressDots.innerHTML = '';
+      mountain.querySelectorAll('.marker, .marker-label').forEach(el => el.remove());
+      // Thêm mới
+      for (let i = 0; i <= count; i++) {
+        const y = 95 - (i * (80 / count)); // từ 95% lên 15% (khoảng leo)
+        const marker = document.createElement('div');
+        marker.className = 'marker';
+        marker.style.top = `${y}%`;
+        mountain.appendChild(marker);
 
-      // Tạo bậc leo theo số câu hỏi
-      for (let i = 0; i < total; i++) {
-        const step = document.createElement('div');
-        step.className = 'step';
-        const baseBottom = 120; // chân núi
-        step.style.bottom = (baseBottom + (i + 1) * parseInt(getComputedStyle(document.documentElement).getPropertyValue('--step-height'))) + 'px';
-        mountainEl.appendChild(step);
-
-        const dot = document.createElement('div');
-        dot.className = 'dot';
-        progressDots.appendChild(dot);
+        const label = document.createElement('div');
+        label.className = 'marker-label';
+        label.style.top = `${y}%`;
+        label.textContent = i === 0 ? 'Chân núi' : (i === count ? 'Đỉnh' : `Mốc ${i}`);
+        mountain.appendChild(label);
       }
-      updateProgressDots();
     }
 
-    function updateProgressDots() {
-      const dots = progressDots.querySelectorAll('.dot');
-      dots.forEach((d, i) => {
-        d.classList.toggle('active', i < current);
-        d.classList.toggle('current', i === current);
-      });
+    function setQuestionSet(index = 0) {
+      questions = [...questionSets[index]];
+      level = 0;
+      renderMarkers(questions.length);
+      updateCharacter();
+      renderQuestion();
+      setStatus("Bắt đầu từ chân núi.");
+      setProgress();
+      hideToast();
     }
 
-    // ====== CẬP NHẬT VỊ TRÍ NHÂN VẬT ======
-    function updateCharacterPosition() {
-      const baseBottom = 120;
-      const stepHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--step-height'));
-      const newBottom = baseBottom + current * stepHeight;
-      characterEl.style.bottom = newBottom + 'px';
-
-      // Nghiêng nhẹ khi leo
-      characterEl.style.transform = `translateX(-50%) rotate(${current > 0 ? 2 : 0}deg)`;
+    function setStatus(text) {
+      statusText.textContent = text;
     }
 
-    // ====== HIỂN THỊ CÂU HỎI ======
+    function setProgress() {
+      const percent = Math.round((level / questions.length) * 100);
+      progressBar.style.width = `${percent}%`;
+    }
+
+    function updateCharacter() {
+      // Tính vị trí top theo level
+      const topPercent = 95 - (level * (80 / questions.length)); // 95% -> 15%
+      character.style.top = `${topPercent}%`;
+    }
+
     function renderQuestion() {
-      const q = questions[current];
-      questionText.textContent = q ? q.text : 'Hoàn thành!';
-      answersEl.innerHTML = '';
-
-      if (!q) return;
-
-      q.options.forEach((opt, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'answer';
+      if (level >= questions.length) {
+        questionText.textContent = "🎉 Chúc mừng! Bạn đã chinh phục đỉnh núi!";
+        optionsEl.innerHTML = "";
+        return;
+      }
+      const q = questions[level];
+      questionText.textContent = `⛰️ Chướng ngại vật ${level + 1}: ${q.q}`;
+      optionsEl.innerHTML = "";
+      q.options.forEach(opt => {
+        const btn = document.createElement('div');
+        btn.className = 'option';
         btn.textContent = opt;
-        btn.addEventListener('click', () => handleAnswer(idx));
-        answersEl.appendChild(btn);
+        btn.addEventListener('click', () => handleAnswer(opt[0])); // ký tự đầu A/B/C/D
+        optionsEl.appendChild(btn);
       });
-
-      updateProgressDots();
-      updateCharacterPosition();
-      toast('');
     }
 
-    // ====== XỬ LÝ TRẢ LỜI ======
-    function handleAnswer(selectedIndex) {
-      const q = questions[current];
-      const correct = selectedIndex === q.correctIndex;
+    function showToastCorrect() {
+      toast.style.display = 'block';
+      toastError.style.display = 'none';
+      setTimeout(() => toast.style.display = 'none', 1200);
+    }
 
-      if (correct) {
-        toast('Đúng rồi! Tiếp tục nào 💪');
-        current++;
-        if (current >= total) {
-          // Thắng
-          updateCharacterPosition(); // lên đỉnh
-          winBanner.classList.add('show');
-          questionText.textContent = 'Bạn đã trả lời đúng tất cả câu hỏi!';
-          answersEl.innerHTML = '';
-          updateProgressDots();
-          return;
-        }
+    function showToastError() {
+      toastError.style.display = 'block';
+      toast.style.display = 'none';
+      setTimeout(() => toastError.style.display = 'none', 1500);
+    }
+
+    function hideToast() {
+      toast.style.display = 'none';
+      toastError.style.display = 'none';
+    }
+
+    function handleAnswer(choice) {
+      const correct = questions[level].answer;
+      if (choice === correct) {
+        level++;
+        showToastCorrect();
+        setStatus("✅ Chính xác! Bạn leo tiếp…");
+        updateCharacter();
+        setProgress();
         renderQuestion();
       } else {
-        toast('Sai mất rồi! Bạn tụt về câu đầu 😅');
-        // Tụt về câu đầu
-        current = 0;
-        winBanner.classList.remove('show');
+        showToastError();
+        setStatus("❌ Sai rồi! Bạn tuột xuống chân núi…");
+        level = 0;
+        updateCharacter();
+        setProgress();
         renderQuestion();
       }
     }
 
-    // ====== TIỆN ÍCH ======
-    function toast(msg) {
-      toastEl.textContent = msg;
-      if (!msg) return;
-      // Tự mờ sau 2.5s
-      setTimeout(() => { if (toastEl.textContent === msg) toastEl.textContent = ''; }, 2500);
-    }
-
-    function shuffleAnswers() {
-      const q = questions[current];
-      if (!q) return;
-      // Trộn đồng thời options và cập nhật correctIndex
-      const pairs = q.options.map((opt, idx) => ({ opt, idx }));
-      for (let i = pairs.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
-      }
-      q.options = pairs.map(p => p.opt);
-      q.correctIndex = pairs.findIndex(p => p.idx === q.correctIndex);
-      renderQuestion();
-    }
-
-    // ====== SỰ KIỆN NÚT ======
     resetBtn.addEventListener('click', () => {
-      current = 0;
-      winBanner.classList.remove('show');
+      level = 0;
+      updateCharacter();
+      setProgress();
+      setStatus("Đã đặt lại—bắt đầu từ chân núi.");
       renderQuestion();
-      toast('Đã quay về câu đầu.');
+      hideToast();
     });
 
-    shuffleBtn.addEventListener('click', shuffleAnswers);
+    shuffleBtn.addEventListener('click', () => {
+      const idx = Math.floor(Math.random() * questionSets.length);
+      setQuestionSet(idx);
+      setStatus("Đã đổi bộ câu hỏi—leo nào!");
+    });
 
-    // ====== KHỞI TẠO ======
-    buildSteps();
-    renderQuestion();
+    // Khởi tạo
+    setQuestionSet(0);
+
+// Nút bắt đầu
+    startBtn.addEventListener('click', () => {
+      startScreen.style.display = "none";
+      gameEl.style.display = "grid";
+      level = 0;
+      updateCharacter();
+      renderQuestion();
+    });
   </script>
 </body>
 </html>
